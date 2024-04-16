@@ -4,14 +4,17 @@ import 'package:tryandbuy/pages/home_page.dart';
 import 'package:tryandbuy/pages/login_page.dart';
 import 'package:tryandbuy/pages/vendor_page.dart';
 import 'package:tryandbuy/pages/admin_page.dart';
-import 'package:tryandbuy/pages/landing_page.dart'; // Make sure you have this page
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:tryandbuy/pages/landing_page.dart';
 
 List<CameraDescription> cameras = [];
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  cameras = await availableCameras();
+  try {
+    cameras = await availableCameras();
+  } on CameraException catch (e) {
+    print('Error in fetching the cameras: $e');
+  }
   runApp(MyApp());
 }
 
@@ -19,16 +22,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ARCore Flutter Plugin Example',
+      title: 'Try and Buy App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LandingScreen(), // Set LandingScreen as the default home
+      home: LandingScreen(),
       routes: {
         '/login': (context) => LoginPage(),
         '/homeScreen': (context) => HomeScreen(),
         '/vendorScreen': (context) => VendorScreen(),
         '/adminScreen': (context) => AdminScreen(),
+        // '/arView': (context) => ArViewPage(cameras: cameras.first),
       },
     );
   }

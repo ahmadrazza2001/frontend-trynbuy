@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:tryandbuy/pages/ar_screen.dart';
 import 'package:tryandbuy/pages/login_page.dart';
 
 class LandingScreen extends StatefulWidget {
@@ -21,7 +22,7 @@ class _LandingScreenState extends State<LandingScreen> {
 
   Future<void> _fetchProducts() async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8080/api/v1/product/allProducts'),
+      Uri.parse('http://192.168.1.132:8080/api/v1/product/allProducts'),
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -78,7 +79,7 @@ class _LandingScreenState extends State<LandingScreen> {
             SizedBox(height: 10),
             ElevatedButton.icon(
                 onPressed: () {
-                  // Placeholder function for AR view
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewPage(arUrl: arUrl)));
                 },
                 icon: Icon(Icons.visibility),
                 label: Text('Try in AR')
@@ -88,6 +89,7 @@ class _LandingScreenState extends State<LandingScreen> {
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
