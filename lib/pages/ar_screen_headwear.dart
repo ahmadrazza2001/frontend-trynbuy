@@ -3,16 +3,16 @@ import 'package:flutter_mediapipe/flutter_mediapipe.dart';
 import 'package:flutter_mediapipe/gen/landmark.pb.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class ArViewPage extends StatefulWidget {
+class ArViewHeadwear extends StatefulWidget {
   final String arUrl;
 
-  ArViewPage({required this.arUrl});
+  ArViewHeadwear({required this.arUrl});
 
   @override
   _ArViewPageState createState() => _ArViewPageState();
 }
 
-class _ArViewPageState extends State<ArViewPage> {
+class _ArViewPageState extends State<ArViewHeadwear> {
   late FlutterMediapipe controller;
   bool _isPermissionGranted = false;
   Widget? arOverlay;
@@ -103,7 +103,7 @@ class _ArViewPageState extends State<ArViewPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("Glasses AR View")),
+      appBar: AppBar(title: Text("Headwear AR View")),
       body: _isPermissionGranted
           ? Stack(children: stackChildren)
           : Center(child: CircularProgressIndicator()),

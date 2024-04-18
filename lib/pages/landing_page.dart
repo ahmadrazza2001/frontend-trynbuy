@@ -31,6 +31,8 @@ class _LandingScreenState extends State<LandingScreen> {
         _products = json.decode(response.body)['body'];
         _isLoading = false;
       });
+      // Debug print to check the structure of the products
+      print(_products);
     } else {
       setState(() {
         _isLoading = false;
@@ -51,13 +53,14 @@ class _LandingScreenState extends State<LandingScreen> {
         viewportFraction: 0.8,
       ),
       items: _products.map((product) {
+        String imageUrl = (product['images'] is List) ? product['images'][0] : product['images'];
         return Builder(
             builder: (BuildContext context) {
               return Container(
                 width: MediaQuery.of(context).size.width,
                 margin: EdgeInsets.symmetric(horizontal: 5.0),
                 decoration: BoxDecoration(color: Colors.amber),
-                child: Image.network(product['images'][0], fit: BoxFit.cover),
+                child: Image.network(imageUrl, fit: BoxFit.cover),
               );
             }
         );
@@ -90,7 +93,6 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,19 +119,22 @@ class _LandingScreenState extends State<LandingScreen> {
             SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.all(8.0),
-
               child: Text('Featuring Now', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ),
             Container(
               height: 300,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                children: _products.map((product) => _buildProductCard(
-                    product['title'],
-                    product['price'].toString(),
-                    product['images'][0],
-                    'ar_url'
-                )).toList(),
+                children: _products.map((product) {
+                  String imageUrl = (product['images'] is List) ? product['images'][0] : product['images'];
+                  String arUrl = (product['arImage'] is List) ? product['arImage'][0] : product['arImage'];
+                  return _buildProductCard(
+                      product['title'],
+                      product['price'].toString(),
+                      imageUrl,
+                      arUrl
+                  );
+                }).toList(),
               ),
             )
           ],
