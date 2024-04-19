@@ -20,7 +20,7 @@ class _NewProductPageState extends State<NewProductPage> {
   final FlutterSecureStorage _storage = FlutterSecureStorage();
   bool _isLoading = false;
 
-  List<String> productTypes = ['Glasses', 'Watch', 'Accessory'];
+  List<String> productTypes = ['Headwear','Glasses', 'Facemask', 'Watch', 'T-shirt', 'Pants', 'Shoes'];
   List<String> imageUrls = [];
   String? arImageUrl;
 

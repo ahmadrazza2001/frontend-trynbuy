@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_mediapipe/flutter_mediapipe.dart';
 import 'package:flutter_mediapipe/gen/landmark.pb.dart';
@@ -15,6 +16,7 @@ class ArViewPage extends StatefulWidget {
 class _ArViewPageState extends State<ArViewPage> {
   late FlutterMediapipe controller;
   bool _isPermissionGranted = false;
+  bool _cameraOn = true; // State variable to control camera preview visibility
   Widget? arOverlay;
 
   @override
@@ -46,22 +48,32 @@ class _ArViewPageState extends State<ArViewPage> {
     controller.landMarksStream.listen(_applySticker, onError: _onError);
   }
 
+
   void _applySticker(NormalizedLandmarkList landmarkList) {
     if (landmarkList.landmark.isNotEmpty) {
-      var faceCenter = landmarkList.landmark[1];
-      double imageWidth = MediaQuery.of(context).size.width * 0.5;
+      var leftEye = landmarkList.landmark[33];   // Left eye landmark
+      var rightEye = landmarkList.landmark[362]; // Right eye landmark
 
-      double centerX = faceCenter.x * MediaQuery.of(context).size.width;
-      double centerY = faceCenter.y * MediaQuery.of(context).size.height;
+      double eyeDistance = rightEye.x - leftEye.x;
+      double overlayWidth = eyeDistance * MediaQuery.of(context).size.width * 2.5; // Increased size by 50%
+
+      double centerX = (rightEye.x + leftEye.x) / 2 * MediaQuery.of(context).size.width;
+      double centerY = (rightEye.y + leftEye.y) / 2 * MediaQuery.of(context).size.height;
+      double angle = math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+
+      double topPosition = centerY - (overlayWidth / 2.7); // Adjust vertical position to center on eyes
 
       setState(() {
         arOverlay = Positioned(
-          left: centerX - (imageWidth / 2),
-          top: centerY - (imageWidth / 1.7),
-          child: Image.network(
-            widget.arUrl,
-            width: imageWidth,
-            fit: BoxFit.cover,
+          left: centerX - (overlayWidth / 2.3),
+          top: topPosition,
+          child: Transform.rotate(
+            angle: angle,
+            child: Image.network(
+              widget.arUrl,
+              width: overlayWidth,
+              fit: BoxFit.cover,
+            ),
           ),
         );
       });
@@ -94,19 +106,23 @@ class _ArViewPageState extends State<ArViewPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> stackChildren = [
-      NativeView(onViewCreated: _onViewCreated),
-    ];
-
-    if (arOverlay != null) {
-      stackChildren.add(arOverlay!);
-    }
-
     return Scaffold(
       appBar: AppBar(title: Text("Glasses AR View")),
-      body: _isPermissionGranted
-          ? Stack(children: stackChildren)
+      body: _isPermissionGranted && _cameraOn
+          ? Stack(children: [
+        NativeView(onViewCreated: _onViewCreated),
+        if (arOverlay != null) arOverlay!
+      ])
           : Center(child: CircularProgressIndicator()),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _cameraOn = false; // Toggle camera visibility
+          });
+          Navigator.pop(context); // Navigate back or to another screen
+        },
+        child: Icon(Icons.close),
+      ),
     );
   }
 

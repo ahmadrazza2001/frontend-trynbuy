@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:tryandbuy/pages/ar_screen.dart';
+import 'package:tryandbuy/pages/ar_screen_headwear.dart';
 import 'package:tryandbuy/pages/login_page.dart';
 
 class LandingScreen extends StatefulWidget {
@@ -31,8 +32,6 @@ class _LandingScreenState extends State<LandingScreen> {
         _products = json.decode(response.body)['body'];
         _isLoading = false;
       });
-      // Debug print to check the structure of the products
-      print(_products);
     } else {
       setState(() {
         _isLoading = false;
@@ -67,8 +66,7 @@ class _LandingScreenState extends State<LandingScreen> {
       }).toList(),
     );
   }
-
-  Widget _buildProductCard(String productName, String price, String imageUrl, String arUrl) {
+  Widget _buildProductCard(String productName, String price, String imageUrl, String arUrl, String productType) {
     return SizedBox(
       width: 220,
       child: Card(
@@ -82,7 +80,18 @@ class _LandingScreenState extends State<LandingScreen> {
             SizedBox(height: 10),
             ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewPage(arUrl: arUrl)));
+                  // Ensure comparison is case-insensitive
+                  String type = productType.toLowerCase();
+                  print('Product type is: $type'); // Debug print
+                  if (type == 'glasses') {
+                    print('Navigating to Glasses AR View'); // Debug print
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewPage(arUrl: arUrl)));
+                  } else if (type == 'headwear') {
+                    print('Navigating to Headwear AR View'); // Debug print
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewHeadwear(arUrl: arUrl)));
+                  } else {
+                    print('Product type $type is not recognized'); // Debug print
+                  }
                 },
                 icon: Icon(Icons.visibility),
                 label: Text('Try in AR')
@@ -92,6 +101,7 @@ class _LandingScreenState extends State<LandingScreen> {
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -128,11 +138,13 @@ class _LandingScreenState extends State<LandingScreen> {
                 children: _products.map((product) {
                   String imageUrl = (product['images'] is List) ? product['images'][0] : product['images'];
                   String arUrl = (product['arImage'] is List) ? product['arImage'][0] : product['arImage'];
+                  String productType = product['productType'] ?? 'unknown';
                   return _buildProductCard(
                       product['title'],
                       product['price'].toString(),
                       imageUrl,
-                      arUrl
+                      arUrl,
+                      productType
                   );
                 }).toList(),
               ),

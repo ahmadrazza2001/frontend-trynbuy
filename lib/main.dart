@@ -32,7 +32,6 @@ class MyApp extends StatelessWidget {
         '/homeScreen': (context) => HomeScreen(),
         '/vendorScreen': (context) => VendorScreen(),
         '/adminScreen': (context) => AdminScreen(),
-        // '/arView': (context) => ArViewPage(cameras: cameras.first),
       },
     );
   }
