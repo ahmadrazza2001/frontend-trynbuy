@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tryandbuy/api/network_util.dart';
 import 'package:tryandbuy/pages/login_page.dart';
 import 'package:tryandbuy/pages/new_product_page.dart';
 import 'package:http/http.dart' as http;
@@ -33,19 +34,19 @@ class _VendorScreenState extends State<VendorScreen> {
     }
   }
 
+
   Future<void> _fetchProducts() async {
     _isLoading = true;
-    final storage = FlutterSecureStorage();
-    String? token = await storage.read(key: 'authToken');
-    final response = await http.get(
-      Uri.parse('http://10.0.2.2:8080/api/v1/product/myPublicProducts'),
+    String? token = await FlutterSecureStorage().read(key: 'authToken');
+    final response = await NetworkUtil.tryRequest(
+      '/api/v1/product/myPublicProducts',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
     );
 
-    if (response.statusCode == 200) {
+    if (response != null && response.statusCode == 200) {
       setState(() {
         _products = json.decode(response.body)['body'];
         _isLoading = false;
@@ -54,23 +55,22 @@ class _VendorScreenState extends State<VendorScreen> {
       setState(() {
         _isLoading = false;
       });
-      print('Failed to fetch products: ${response.body}');
+      print('Failed to fetch products');
     }
   }
 
   Future<void> _fetchOrders() async {
     _isLoading = true;
-    final storage = FlutterSecureStorage();
-    String? token = await storage.read(key: 'authToken');
-    final response = await http.get(
-      Uri.parse('http://10.0.2.2:8080/api/v1/user/vendorOrders'),
+    String? token = await FlutterSecureStorage().read(key: 'authToken');
+    final response = await NetworkUtil.tryRequest(
+      '/api/v1/user/vendorOrders',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
     );
 
-    if (response.statusCode == 200) {
+    if (response != null && response.statusCode == 200) {
       var responseBody = json.decode(response.body);
       List<dynamic> orders = responseBody['orders'] ?? [];
       setState(() {
@@ -81,24 +81,22 @@ class _VendorScreenState extends State<VendorScreen> {
       setState(() {
         _isLoading = false;
       });
-      print('Failed to fetch orders: ${response.body}');
+      print('Failed to fetch orders');
     }
   }
 
-
   Future<void> _fetchProfile() async {
     _isLoading = true;
-    final storage = FlutterSecureStorage();
-    String? token = await storage.read(key: 'authToken');
-    final response = await http.get(
-      Uri.parse('http://10.0.2.2:8080/api/v1/user/myProfile'),
+    String? token = await FlutterSecureStorage().read(key: 'authToken');
+    final response = await NetworkUtil.tryRequest(
+      '/api/v1/user/myProfile',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
     );
 
-    if (response.statusCode == 200) {
+    if (response != null && response.statusCode == 200) {
       setState(() {
         _profile = json.decode(response.body)['data']['user'];
         _isLoading = false;
@@ -107,7 +105,7 @@ class _VendorScreenState extends State<VendorScreen> {
       setState(() {
         _isLoading = false;
       });
-      print('Failed to fetch profile: ${response.body}');
+      print('Failed to fetch profile');
     }
   }
 

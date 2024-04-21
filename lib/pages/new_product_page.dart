@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:tryandbuy/api/network_util.dart';
 
 class NewProductPage extends StatefulWidget {
   @override
@@ -13,14 +13,14 @@ class NewProductPage extends StatefulWidget {
 class _NewProductPageState extends State<NewProductPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
   final TextEditingController _keywordsController = TextEditingController();
   String _productType = "Select Type";
   final ImagePicker _picker = ImagePicker();
   final CloudinaryPublic cloudinary = CloudinaryPublic('dicebox', 'trynbuy', cache: false);
   final FlutterSecureStorage _storage = FlutterSecureStorage();
   bool _isLoading = false;
-
-  List<String> productTypes = ['Headwear','Glasses', 'Facemask', 'Watch', 'T-shirt', 'Pants', 'Shoes'];
+  List<String> productTypes = ['Headwear', 'Glasses', 'Facemask'];
   List<String> imageUrls = [];
   String? arImageUrl;
 
@@ -44,7 +44,6 @@ class _NewProductPageState extends State<NewProductPage> {
         CloudinaryFile.fromFile(imagePath, resourceType: CloudinaryResourceType.Image),
       );
       imageUrls.add(response.secureUrl);
-      print('Uploaded image URL: ${response.secureUrl}');
     } catch (e) {
       print('Error uploading image: $e');
     }
@@ -61,7 +60,6 @@ class _NewProductPageState extends State<NewProductPage> {
           CloudinaryFile.fromFile(pickedFile.path, resourceType: CloudinaryResourceType.Image),
         );
         arImageUrl = response.secureUrl;
-        print('Uploaded AR image URL: $arImageUrl');
       } catch (e) {
         print('Error uploading AR image: $e');
       }
@@ -76,35 +74,37 @@ class _NewProductPageState extends State<NewProductPage> {
       print('Please upload all images before creating the product.');
       return;
     }
+
     setState(() {
       _isLoading = true;
     });
 
-    String? token = await FlutterSecureStorage().read(key: 'authToken');
-
-    final url = 'http://10.0.2.2:8080/api/v1/product/createProduct';
-    final response = await http.post(
-      Uri.parse(url),
-      headers: <String, String>{
+    String? token = await _storage.read(key: 'authToken');
+    final response = await NetworkUtil.tryRequest(
+      '/api/v1/product/createProduct',
+      method: 'POST',
+      headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({
+      body: {
         'title': _titleController.text,
         'description': _descriptionController.text,
+        'price': _priceController.text,
         'keywords': _keywordsController.text.split(',').map((s) => s.trim()).toList(),
         'images': imageUrls,
-        'arImage': arImageUrl,
+        'arImage': [arImageUrl],
         'productType': _productType,
-      }),
+      },
     );
 
-    if (response.statusCode == 201) {
+    if (response != null && response.statusCode == 201) {
       print('Product created successfully!');
       Navigator.pop(context);
     } else {
-      print('Failed to create product: ${response.body}');
+      print('Failed to create product: ${response?.body}');
     }
+
     setState(() {
       _isLoading = false;
     });
@@ -131,6 +131,10 @@ class _NewProductPageState extends State<NewProductPage> {
               TextField(
                 controller: _descriptionController,
                 decoration: InputDecoration(labelText: 'Description'),
+              ),
+              TextField(
+                controller: _priceController,
+                decoration: InputDecoration(labelText: 'Price'),
               ),
               TextField(
                 controller: _keywordsController,

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:tryandbuy/api/network_util.dart';
 import 'package:tryandbuy/pages/ar_screen.dart';
+import 'package:tryandbuy/pages/ar_screen_facemask.dart';
 import 'package:tryandbuy/pages/ar_screen_headwear.dart';
 import 'package:tryandbuy/pages/login_page.dart';
 
@@ -22,12 +23,8 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 
   Future<void> _fetchProducts() async {
-    final response = await http.get(
-      Uri.parse('http://192.168.1.132:8080/api/v1/product/allProducts'),
-      headers: {'Content-Type': 'application/json'},
-    );
-
-    if (response.statusCode == 200) {
+    final response = await NetworkUtil.tryRequest('/api/v1/product/allProducts', headers: {'Content-Type': 'application/json'});
+    if (response != null && response.statusCode == 200) {
       setState(() {
         _products = json.decode(response.body)['body'];
         _isLoading = false;
@@ -35,11 +32,43 @@ class _LandingScreenState extends State<LandingScreen> {
     } else {
       setState(() {
         _isLoading = false;
-        print('Failed to fetch products: ${response.body}');
+        print('Failed to fetch products from any host');
       });
     }
   }
 
+  Widget _buildProductCard(String productName, String price, String imageUrl, String arUrl, String productType) {
+    return SizedBox(
+      width: 220,
+      child: Card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.network(imageUrl, width: double.infinity, height: 150, fit: BoxFit.cover),
+            SizedBox(height: 5),
+            Text(productName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(price, style: TextStyle(fontSize: 14, color: Colors.grey)),
+            SizedBox(height: 10),
+            ElevatedButton.icon(
+                onPressed: () {
+                  String type = productType.toLowerCase();
+                  print("Product type on button press: $type");  // Debug print
+                  if (type.contains('glasses')) {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewPage(arUrl: arUrl)));
+                  } else if (type.contains('headwear')) {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewHeadwear(arUrl: arUrl)));
+                  } else if (type.contains('facemask')) {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewFacemask(arUrl: arUrl)));
+                  }
+                },
+                icon: Icon(Icons.visibility),
+                label: Text('AR View')
+            )
+          ],
+        ),
+      ),
+    );
+  }
   Widget _buildMainCarousel() {
     return CarouselSlider(
       options: CarouselOptions(
@@ -64,41 +93,6 @@ class _LandingScreenState extends State<LandingScreen> {
             }
         );
       }).toList(),
-    );
-  }
-  Widget _buildProductCard(String productName, String price, String imageUrl, String arUrl, String productType) {
-    return SizedBox(
-      width: 220,
-      child: Card(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Image.network(imageUrl, width: double.infinity, height: 150, fit: BoxFit.cover),
-            SizedBox(height: 5),
-            Text(productName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Text(price, style: TextStyle(fontSize: 14, color: Colors.grey)),
-            SizedBox(height: 10),
-            ElevatedButton.icon(
-                onPressed: () {
-                  // Ensure comparison is case-insensitive
-                  String type = productType.toLowerCase();
-                  print('Product type is: $type'); // Debug print
-                  if (type == 'glasses') {
-                    print('Navigating to Glasses AR View'); // Debug print
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewPage(arUrl: arUrl)));
-                  } else if (type == 'headwear') {
-                    print('Navigating to Headwear AR View'); // Debug print
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewHeadwear(arUrl: arUrl)));
-                  } else {
-                    print('Product type $type is not recognized'); // Debug print
-                  }
-                },
-                icon: Icon(Icons.visibility),
-                label: Text('Try in AR')
-            )
-          ],
-        ),
-      ),
     );
   }
 
