@@ -49,29 +49,55 @@ class _ArViewPageState extends State<ArViewPage> {
   }
 
 
+  double computeYaw(NormalizedLandmark nose) {
+    return (0.5 - nose.x) * 2 * math.pi;
+  }
+
+  double computeRoll(NormalizedLandmark leftEye, NormalizedLandmark rightEye) {
+    return math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+  }
+
+  double computePitch(NormalizedLandmark leftEye, NormalizedLandmark rightEye, NormalizedLandmark nose) {
+    double midPointX = (leftEye.x + rightEye.x) / 2;
+    double midPointY = (leftEye.y + rightEye.y) / 2;
+    double verticalDistance = nose.y - midPointY;
+    return math.atan2(verticalDistance, (nose.x - midPointX).abs());
+  }
+
   void _applySticker(NormalizedLandmarkList landmarkList) {
     if (landmarkList.landmark.isNotEmpty) {
-      var leftEye = landmarkList.landmark[33];   // Left eye landmark
-      var rightEye = landmarkList.landmark[362]; // Right eye landmark
+      var leftEye = landmarkList.landmark[33];
+      var rightEye = landmarkList.landmark[362];
+      var noseTip = landmarkList.landmark[1];
+      var chin = landmarkList.landmark[152];
 
       double eyeDistance = rightEye.x - leftEye.x;
-      double overlayWidth = eyeDistance * MediaQuery.of(context).size.width * 2.5; // Increased size by 50%
-
+      double stickerWidth = eyeDistance * MediaQuery.of(context).size.width * 10;
+      double stickerHeight = (chin.y - noseTip.y) * MediaQuery.of(context).size.height * 2;
+      stickerHeight *= 0.8 + (noseTip.y - chin.y) * 1;
       double centerX = (rightEye.x + leftEye.x) / 2 * MediaQuery.of(context).size.width;
-      double centerY = (rightEye.y + leftEye.y) / 2 * MediaQuery.of(context).size.height;
-      double angle = math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
-
-      double topPosition = centerY - (overlayWidth / 2.7); // Adjust vertical position to center on eyes
+      double centerY = (noseTip.y + chin.y) / 2 * MediaQuery.of(context).size.height;
+      double dampeningFactor = 0.2;
+      double roll = computeRoll(leftEye, rightEye) * dampeningFactor;
+      double pitch = computePitch(leftEye, rightEye, noseTip) * dampeningFactor;
+      double yaw = computeYaw(noseTip) * dampeningFactor;
+      double depthFactor = 1 / (3.5 + noseTip.z);
 
       setState(() {
         arOverlay = Positioned(
-          left: centerX - (overlayWidth / 2.3),
-          top: topPosition,
-          child: Transform.rotate(
-            angle: angle,
+          left: centerX - stickerWidth / 2.07,
+          top: centerY - stickerHeight / 0.6,
+          child: Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..rotateZ(roll)
+              ..rotateY(-yaw)
+              ..rotateX(pitch)
+              ..scale(depthFactor, depthFactor),
             child: Image.network(
               widget.arUrl,
-              width: overlayWidth,
+              width: stickerWidth,
+              height: stickerHeight,
               fit: BoxFit.cover,
             ),
           ),

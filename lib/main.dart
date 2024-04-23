@@ -33,6 +33,7 @@ class MyApp extends StatelessWidget {
         '/vendorScreen': (context) => VendorScreen(),
         '/adminScreen': (context) => AdminScreen(),
       },
+      debugShowCheckedModeBanner: false,
     );
   }
 }

@@ -30,13 +30,14 @@ class _LoginPageState extends State<LoginPage> {
         default:
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('Unexpected user role received.'),
+            backgroundColor: Colors.orangeAccent,
           ));
           break;
       }
     } else {
-      // Display error message from the login result
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(result['error']),
+        backgroundColor: Colors.orangeAccent,
       ));
     }
   }
@@ -45,30 +46,59 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: Text('Login', style: TextStyle(color: Colors.white),),
+        backgroundColor: Colors.green,
       ),
-      body: Padding(
+      body: Container(
+        color: Colors.black,
         padding: EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Text(
+              'Welcome Back!',
+              style: TextStyle(fontSize: 28, color: Colors.green, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 40),
             TextField(
               controller: _emailController,
+              style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Email',
+                labelStyle: TextStyle(color: Colors.green),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.green),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.green),
+                ),
               ),
             ),
+            SizedBox(height: 20),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(
+              style: TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
                 labelText: 'Password',
+                labelStyle: TextStyle(color: Colors.green),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.green),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.green),
+                ),
               ),
               obscureText: true,
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 30),
             ElevatedButton(
               onPressed: handleLogin,
-              child: Text('Login'),
+              child: Text('Login', style: TextStyle(color: Colors.white),),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Colors.green),
+                padding: MaterialStateProperty.all(EdgeInsets.symmetric(vertical: 10.0, horizontal: 50.0)),
+                textStyle: MaterialStateProperty.all(TextStyle(fontSize: 18)),
+              ),
             ),
           ],
         ),

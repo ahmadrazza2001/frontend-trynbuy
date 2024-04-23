@@ -56,57 +56,47 @@ class _ArViewFacemaskState extends State<ArViewFacemask> {
     return math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
   }
 
-
   double computePitch(NormalizedLandmark leftEye, NormalizedLandmark rightEye, NormalizedLandmark nose) {
     double midPointX = (leftEye.x + rightEye.x) / 2;
     double midPointY = (leftEye.y + rightEye.y) / 2;
     double verticalDistance = nose.y - midPointY;
     return math.atan2(verticalDistance, (nose.x - midPointX).abs());
   }
+
   void _applySticker(NormalizedLandmarkList landmarkList) {
     if (landmarkList.landmark.isNotEmpty) {
-      var leftEye = landmarkList.landmark[33];   // Left eye landmark
-      var rightEye = landmarkList.landmark[362]; // Right eye landmark
-      var noseTip = landmarkList.landmark[1];    // Nose tip landmark
+      var leftEye = landmarkList.landmark[33];
+      var rightEye = landmarkList.landmark[362];
+      var noseTip = landmarkList.landmark[1];
+      var chin = landmarkList.landmark[152];
 
-      // Compute eye distance for scaling and adjust the width to cover the face more broadly
       double eyeDistance = rightEye.x - leftEye.x;
-      double overlayWidth = eyeDistance * MediaQuery.of(context).size.width;
-
-      // Center the sticker between the eyes but adjust for full face width
+      double stickerWidth = eyeDistance * MediaQuery.of(context).size.width * 2.8;
+      double stickerHeight = (chin.y - noseTip.y) * MediaQuery.of(context).size.height * 1.4;
+      stickerHeight *= 1.1 + (noseTip.y - chin.y) * 0.5;
       double centerX = (rightEye.x + leftEye.x) / 2 * MediaQuery.of(context).size.width;
-      double centerY = (rightEye.y + leftEye.y) / 2 * MediaQuery.of(context).size.height;
-
-      // Compute rotations with a dampening factor to reduce sensitivity
-      double dampeningFactor = 0.5; // Reduce this factor to make transformations less sensitive
+      double centerY = (noseTip.y + chin.y) / 2 * MediaQuery.of(context).size.height;
+      double dampeningFactor = 0.3;
       double roll = computeRoll(leftEye, rightEye) * dampeningFactor;
       double pitch = computePitch(leftEye, rightEye, noseTip) * dampeningFactor;
       double yaw = computeYaw(noseTip) * dampeningFactor;
-
-      // Adjust depth factor and apply it to both width and height
-      double depthFactor = 1 / (1 + noseTip.z);
-      double scaledWidth = overlayWidth * depthFactor * 2; // Increase the width by 100% to stretch to chin
-      double scaledHeight = scaledWidth * 0.9;  // Adjust height proportionally based on design needs
-
-      // Compute vertical position to align the sticker with the nose
-      double noseY = noseTip.y * MediaQuery.of(context).size.height;
-      double stickerTop = noseY - (scaledHeight / 1.4);
+      double depthFactor = 1 / (1.2 + noseTip.z);
 
       setState(() {
         arOverlay = Positioned(
-          left: centerX - (scaledWidth / 2.5),
-          top: stickerTop,
+          left: centerX - stickerWidth / 2.4,
+          top: centerY - stickerHeight / 0.9,
           child: Transform(
             alignment: Alignment.center,
             transform: Matrix4.identity()
-              ..rotateZ(roll)   // Roll rotation around the Z axis
-              ..rotateY(-yaw)   // Yaw rotation around the Y axis
-              ..rotateX(pitch)  // Pitch rotation around the X axis
-              ..scale(depthFactor, depthFactor), // Scale down based on depth
+              ..rotateZ(roll)
+              ..rotateY(-yaw)
+              ..rotateX(pitch)
+              ..scale(depthFactor, depthFactor),
             child: Image.network(
               widget.arUrl,
-              width: scaledWidth,
-              height: scaledHeight,
+              width: stickerWidth,
+              height: stickerHeight,
               fit: BoxFit.cover,
             ),
           ),

@@ -15,6 +15,7 @@ class LandingScreen extends StatefulWidget {
 class _LandingScreenState extends State<LandingScreen> {
   List<dynamic> _products = [];
   bool _isLoading = true;
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -32,7 +33,6 @@ class _LandingScreenState extends State<LandingScreen> {
     } else {
       setState(() {
         _isLoading = false;
-        print('Failed to fetch products from any host');
       });
     }
   }
@@ -52,7 +52,6 @@ class _LandingScreenState extends State<LandingScreen> {
             ElevatedButton.icon(
                 onPressed: () {
                   String type = productType.toLowerCase();
-                  print("Product type on button press: $type");  // Debug print
                   if (type.contains('glasses')) {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewPage(arUrl: arUrl)));
                   } else if (type.contains('headwear')) {
@@ -63,12 +62,20 @@ class _LandingScreenState extends State<LandingScreen> {
                 },
                 icon: Icon(Icons.visibility),
                 label: Text('AR View')
+            ),
+            SizedBox(height: 5),
+            ElevatedButton.icon(onPressed: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+            },
+            icon: Icon(Icons.add_shopping_cart),
+              label: Text('Add to cart'),
             )
           ],
         ),
       ),
     );
   }
+
   Widget _buildMainCarousel() {
     return CarouselSlider(
       options: CarouselOptions(
@@ -96,7 +103,6 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,16 +123,14 @@ class _LandingScreenState extends State<LandingScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 10),
-            _isLoading
-                ? CircularProgressIndicator()
-                : _buildMainCarousel(),
+            _isLoading ? CircularProgressIndicator() : _buildMainCarousel(),
             SizedBox(height: 20),
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('Featuring Now', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              padding: EdgeInsets.all(8.0),
+              child: Text('New Arrivals', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ),
             Container(
-              height: 300,
+              height: 330,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: _products.map((product) {
@@ -147,13 +151,24 @@ class _LandingScreenState extends State<LandingScreen> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => _onTapItem(context, index),
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_checkout), label: 'Cart'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile')
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         selectedItemColor: Colors.amber[800],
       ),
     );
+  }
+
+  void _onTapItem(BuildContext context, int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    if (_currentIndex == 1 || _currentIndex == 2) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    }
   }
 }

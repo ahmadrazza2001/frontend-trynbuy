@@ -257,22 +257,34 @@ class _VendorScreenState extends State<VendorScreen> {
   void _completeOrder(String orderId, int index) async {
     final storage = FlutterSecureStorage();
     String? token = await storage.read(key: 'authToken');
-    final response = await http.patch(
-      Uri.parse('http://10.0.2.2:8080/api/v1/user/completeOrder/$orderId'),
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Authentication token is not available.'),
+      ));
+      return;
+    }
+
+    final response = await NetworkUtil.tryRequest(
+      '/api/v1/user/completeOrder/$orderId',
+      method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
       },
       body: jsonEncode({"orderStatus": "completed"}),
     );
 
-    if (response.statusCode == 200) {
+    if (response != null && response.statusCode == 200) {
       setState(() {
         _orders[index]['orderStatus'] = 'completed';
       });
-    } else {
+    } else if (response != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Failed to complete order: ${json.decode(response.body)['message']}'),
+      ));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to send request to complete order.'),
       ));
     }
   }
