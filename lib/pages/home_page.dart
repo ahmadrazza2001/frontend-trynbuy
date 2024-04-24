@@ -6,6 +6,7 @@ import 'package:tryandbuy/pages/ar_screen.dart';
 import 'package:tryandbuy/pages/ar_screen_facemask.dart';
 import 'package:tryandbuy/pages/ar_screen_headwear.dart';
 import 'package:tryandbuy/pages/login_page.dart';
+import 'package:tryandbuy/pages/my_orders.dart';
 import 'package:tryandbuy/pages/new_order.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -20,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   Map<String, dynamic> _profile = {};
   Map<String, dynamic> _cart = {};
+  bool _isVendorRequestActive = false;
   final FlutterSecureStorage _storage = FlutterSecureStorage();
 
   @override
@@ -57,8 +59,10 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
     if (response != null && response.statusCode == 200) {
+      var profileData = json.decode(response.body)['data']['user'];
       setState(() {
-        _profile = json.decode(response.body)['data']['user'];
+        _profile = profileData;
+        _isVendorRequestActive = profileData['requestForVendor'] ?? false;
         _isLoading = false;
       });
     } else {
@@ -86,6 +90,55 @@ class _HomeScreenState extends State<HomeScreen> {
       _cart[productId]['totalPrice'] = _cart[productId]['basePrice'] * _cart[productId]['quantity'];
     });
   }
+
+  void _requestVendorStatus(bool newValue) async {
+    if (!newValue || _isVendorRequestActive) {
+      return;
+    }
+
+    String? token = await _storage.read(key: 'authToken');
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Authentication token not found")),
+      );
+      return;
+    }
+
+    final response = await NetworkUtil.tryRequest(
+      '/api/v1/user/requestVendor',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: {
+        'requestForVendor': 'true'
+      }
+    );
+
+    if (response != null && response.statusCode == 200) {
+      var data = json.decode(response.body);
+      if (data['status'] == 'success') {
+        setState(() {
+          _isVendorRequestActive = true;
+          _profile['requestForVendor'] = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? "Request sent successfully")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? "Failed to send vendor request")),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to send vendor request with status code: ${response?.statusCode}")),
+      );
+    }
+  }
+
+
 
   Widget _homeContent() {
     return Column(
@@ -273,15 +326,57 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text((_profile['firstName'] ?? '') + ' ' + (_profile['lastName'] ?? ''), style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-            Text('@${_profile['username'] ?? 'N/A'}', style: TextStyle(fontSize: 18, color: Colors.white)),
-            Text('${_profile['email'] ?? 'N/A'}', style: TextStyle(fontSize: 18, color: Colors.white)),
-            Text('Status: ${_profile['accountStatus'] ?? 'N/A'}', style: TextStyle(fontSize: 18, color: Colors.green)),
+            Text((_profile['firstName'] ?? '') + ' ' + (_profile['lastName'] ?? ''),
+                style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text('@${_profile['username'] ?? 'N/A'}',
+                style: TextStyle(fontSize: 13, color: Colors.grey)),
+            Text('${_profile['email'] ?? 'N/A'}',
+                style: TextStyle(fontSize: 13, color: Colors.grey)),
+            Text('Status: ${_profile['accountStatus'] ?? 'N/A'}',
+                style: TextStyle(fontSize: 13, color: Colors.green)),
+            SizedBox(height: 20),
+            Text('Actions',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ListTile(
+                  title: Text('Become a vendor:', style: TextStyle(fontSize: 16, color: Colors.white)),
+                  trailing: Transform.scale(
+                    scale: 0.75, // Adjust the size by changing the scale
+                    child: Switch(
+                      value: _isVendorRequestActive,
+                      onChanged: _requestVendorStatus,
+                      activeColor: Colors.green,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20), // Space before logout button
+            Align(
+              alignment: Alignment.center,
+              child: ElevatedButton(
+                onPressed: () {
+                  // Navigate to the login screen directly
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginPage()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, // Background color of the button
+
+                ),
+                child: Text('Logout', style: TextStyle(color: Colors.white),),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+
 
   Widget _buildContent() {
     switch (_currentIndex) {
@@ -303,6 +398,15 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text("Try'nBuy", style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.green,
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            color: Colors.white,
+            icon: Icon(Icons.layers_rounded),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => MyOrders()));
+            },
+          )
+        ],
       ),
       backgroundColor: Colors.black,
       body: _buildContent(),
@@ -355,4 +459,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-

@@ -271,7 +271,7 @@ class _VendorScreenState extends State<VendorScreen> {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({"orderStatus": "completed"}),
+      body:{"orderStatus": "completed"},
     );
 
     if (response != null && response.statusCode == 200) {

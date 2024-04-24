@@ -25,6 +25,6 @@ class NetworkUtil {
         print('Exception when connecting to $host: $e');
       }
     }
-    return null; // Return null if all hosts fail
+    return null;
   }
 }
