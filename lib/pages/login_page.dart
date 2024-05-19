@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tryandbuy/api/auth_api.dart';
+import 'package:tryandbuy/pages/signup_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -40,6 +41,11 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: Colors.orangeAccent,
       ));
     }
+  }
+
+  void handleSignup() async {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => SignupPage()));
   }
 
   @override
@@ -98,6 +104,20 @@ class _LoginPageState extends State<LoginPage> {
                 backgroundColor: MaterialStateProperty.all(Colors.green),
                 padding: MaterialStateProperty.all(EdgeInsets.symmetric(vertical: 10.0, horizontal: 50.0)),
                 textStyle: MaterialStateProperty.all(TextStyle(fontSize: 18)),
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            ElevatedButton(
+              onPressed: handleSignup,
+              child: Text(
+                'create a new account',
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Colors.black),
+                textStyle: MaterialStateProperty.all(TextStyle(fontSize: 15)),
               ),
             ),
           ],

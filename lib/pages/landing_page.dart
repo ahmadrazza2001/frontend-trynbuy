@@ -5,6 +5,7 @@ import 'package:tryandbuy/api/network_util.dart';
 import 'package:tryandbuy/pages/ar_screen.dart';
 import 'package:tryandbuy/pages/ar_screen_facemask.dart';
 import 'package:tryandbuy/pages/ar_screen_headwear.dart';
+import 'package:tryandbuy/pages/ar_screen_body.dart';
 import 'package:tryandbuy/pages/login_page.dart';
 
 class LandingScreen extends StatefulWidget {
@@ -59,16 +60,20 @@ class _LandingScreenState extends State<LandingScreen> {
                   } else if (type.contains('facemask')) {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewFacemask(arUrl: arUrl)));
                   }
+                  else if (type.contains('shirt')) {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => ArBodyPage(arUrl: arUrl)));
+                  }
+
                 },
-                icon: Icon(Icons.visibility),
-                label: Text('AR View')
+                icon: Icon(Icons.visibility, color: Colors.green),
+                label: Text('AR View', style: TextStyle(color: Colors.green),)
             ),
             SizedBox(height: 5),
             ElevatedButton.icon(onPressed: (){
               Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
             },
-            icon: Icon(Icons.add_shopping_cart),
-              label: Text('Add to cart'),
+            icon: Icon(Icons.add_shopping_cart, color: Colors.black),
+              label: Text('Add to cart', style: TextStyle(color: Colors.black)),
             )
           ],
         ),
@@ -94,7 +99,7 @@ class _LandingScreenState extends State<LandingScreen> {
               return Container(
                 width: MediaQuery.of(context).size.width,
                 margin: EdgeInsets.symmetric(horizontal: 5.0),
-                decoration: BoxDecoration(color: Colors.amber),
+                decoration: BoxDecoration(color: Colors.green[200]),
                 child: Image.network(imageUrl, fit: BoxFit.cover),
               );
             }
@@ -107,14 +112,14 @@ class _LandingScreenState extends State<LandingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Try'nBuy"),
-        backgroundColor: Colors.orangeAccent,
+        title: Text("Try'nBuy", style: TextStyle(color: Colors.white),),
+        backgroundColor: Colors.green,
         actions: [
           TextButton(
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
               },
-              child: Text('Login', style: TextStyle(color: Colors.black))
+              child: Text('Login', style: TextStyle(color: Colors.white))
           )
         ],
       ),
@@ -155,10 +160,12 @@ class _LandingScreenState extends State<LandingScreen> {
         onTap: (index) => _onTapItem(context, index),
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_checkout), label: 'Cart'),
+
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
-        selectedItemColor: Colors.amber[800],
+        selectedItemColor: Colors.green,
+        unselectedItemColor: Colors.green[200],
       ),
     );
   }

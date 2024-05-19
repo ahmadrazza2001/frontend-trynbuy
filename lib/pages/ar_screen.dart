@@ -16,7 +16,7 @@ class ArViewPage extends StatefulWidget {
 class _ArViewPageState extends State<ArViewPage> {
   late FlutterMediapipe controller;
   bool _isPermissionGranted = false;
-  bool _cameraOn = true; // State variable to control camera preview visibility
+  bool _cameraOn = true;
   Widget? arOverlay;
 
   @override
@@ -143,9 +143,9 @@ class _ArViewPageState extends State<ArViewPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
-            _cameraOn = false; // Toggle camera visibility
+            _cameraOn = false;
           });
-          Navigator.pop(context); // Navigate back or to another screen
+          Navigator.pop(context);
         },
         child: Icon(Icons.close),
       ),

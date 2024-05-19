@@ -20,7 +20,7 @@ class _NewProductPageState extends State<NewProductPage> {
   final CloudinaryPublic cloudinary = CloudinaryPublic('dicebox', 'trynbuy', cache: false);
   final FlutterSecureStorage _storage = FlutterSecureStorage();
   bool _isLoading = false;
-  List<String> productTypes = ['Headwear', 'Glasses', 'Facemask'];
+  List<String> productTypes = ['Headwear', 'Glasses', 'Facemask', 'Shirt', 'Watch'];
   List<String> imageUrls = [];
   String? arImageUrl;
 

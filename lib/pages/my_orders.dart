@@ -76,33 +76,40 @@ class _MyOrdersState extends State<MyOrders> {
           // Format the date
           DateTime orderDate = DateTime.parse(order['createdAt']);
           String formattedDate = DateFormat('dd-MM-yyyy').format(orderDate);
-          return ListTile(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '#${order['_id'].substring(order['_id'].length - 5)}',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
-                ),
-                Text(
-                  '${order['orderProductTitle']}',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
+          return Card(
+            color: Colors.green[50],
+            child: ListTile(
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '#${order['_id'].substring(order['_id'].length - 5)}',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                  ),
+                  Text(
+                    '${order['orderProductTitle']}',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'PKR ${order['orderProductPrice']}',
+                  ),
+                  Text(
+                    '${order['orderStatus']}',
+                    style: TextStyle(
+                      color: order['orderStatus'] == 'completed'
+                          ? Colors.green
+                          : Colors.orangeAccent,
+                    ),
+                  )
+                ],
+              ),
+              trailing: Text('Order Date: $formattedDate'),
             ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'PKR ${order['orderProductPrice']}',
-                ),
-                Text(
-                  '${order['orderStatus']}',
-                  style: TextStyle(color: Colors.green),
-                ),
-              ],
-            ),
-            trailing: Text('Order Date: $formattedDate'),
           );
 
 

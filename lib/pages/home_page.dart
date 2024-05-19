@@ -5,6 +5,7 @@ import 'package:tryandbuy/api/network_util.dart';
 import 'package:tryandbuy/pages/ar_screen.dart';
 import 'package:tryandbuy/pages/ar_screen_facemask.dart';
 import 'package:tryandbuy/pages/ar_screen_headwear.dart';
+import 'package:tryandbuy/pages/ar_screen_body.dart';
 import 'package:tryandbuy/pages/login_page.dart';
 import 'package:tryandbuy/pages/my_orders.dart';
 import 'package:tryandbuy/pages/new_order.dart';
@@ -163,6 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 product['price'].toString(),
                 product['images'][0],
                 product['arImage'][0],
+                product['productType'],
                 product['_id'].toString(),
               );
             },
@@ -173,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildProductCard(String productName, String price, String imageUrl, String arUrl, String productId) {
+  Widget _buildProductCard(String productName, String price, String imageUrl, String arUrl, String productType, String productId ) {
     return SizedBox(
       width: 230,
       child: Card(
@@ -192,7 +194,21 @@ class _HomeScreenState extends State<HomeScreen> {
             Text('PKR $price', style: TextStyle(fontSize: 14, color: Colors.black)),
             SizedBox(height: 10),
             ElevatedButton.icon(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewPage(arUrl: arUrl))),
+              onPressed: () {
+                String type = productType.toLowerCase();
+                // print("Attempting to navigate to AR view for type: $type");
+                if (type.contains('glasses')) {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewPage(arUrl: arUrl)));
+                } else if (type.contains('headwear')) {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewHeadwear(arUrl: arUrl)));
+                } else if (type.contains('facemask')) {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ArViewFacemask(arUrl: arUrl)));
+                }
+                else if (type.contains('shirt')) {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ArBodyPage(arUrl: arUrl)));
+                }
+
+              },
               icon: Icon(Icons.visibility, color: Colors.green),
               label: Text('AR View', style: TextStyle(color: Colors.green)),
             ),
@@ -401,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             color: Colors.white,
-            icon: Icon(Icons.layers_rounded),
+            icon: Icon(Icons.format_list_bulleted_sharp),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => MyOrders()));
             },

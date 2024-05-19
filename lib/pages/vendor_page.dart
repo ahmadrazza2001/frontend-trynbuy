@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:tryandbuy/api/network_util.dart';
 import 'package:tryandbuy/pages/login_page.dart';
 import 'package:tryandbuy/pages/new_product_page.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -114,6 +113,34 @@ class _VendorScreenState extends State<VendorScreen> {
     _buildOrdersPage(),
     _buildProfilePage(),
   ];
+
+  void _deleteProduct(String productId) async {
+    String? token = await FlutterSecureStorage().read(key: 'authToken');
+
+    final response = await NetworkUtil.tryRequest(
+      '/api/v1/product/deleteProduct/$productId',
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response != null && response.statusCode == 200) {
+      print('Product deleted successfully.');
+      _fetchProducts();
+    } else {
+      print('Failed to delete product: ${response?.body}');
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+
+
+
   Widget _buildProductsPage() {
     return Scaffold(
       appBar: AppBar(
@@ -177,23 +204,19 @@ class _VendorScreenState extends State<VendorScreen> {
                 ],
               ),
               trailing: PopupMenuButton(
-                icon: Icon(Icons.more_vert),
-                onSelected: (value) {
-                  switch (value) {
-                    case 'edit':
-                      print('Edit option selected');
-                      break;
-                    case 'delete':
-                      print('Delete option selected');
-                      break;
+                onSelected: (String value) {
+                  if (value == 'edit') {
+                    // _editProduct(product['_id']);
+                  } else if (value == 'delete') {
+                    _deleteProduct(product['_id']);
                   }
                 },
-                itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-                  PopupMenuItem(
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
                     value: 'edit',
                     child: Text('Edit'),
                   ),
-                  PopupMenuItem(
+                  const PopupMenuItem<String>(
                     value: 'delete',
                     child: Text('Delete'),
                   ),
@@ -299,33 +322,33 @@ class _VendorScreenState extends State<VendorScreen> {
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : Padding(
-        padding: EdgeInsets.all(16.0), // Add padding around the content
+        padding: EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Align text to the start of the column
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text((_profile['firstName'] ?? '') + ' ' + (_profile['lastName'] ?? ''), style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5), // Internal padding for the username
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(10), // Rounded corners
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Text('@${_profile['username'] ?? 'N/A'}', style: TextStyle(fontSize: 18, color: Colors.black26)),
             ),
             SizedBox(height: 10),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5), // Internal padding for the email
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(10), // Rounded corners
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Text('${_profile['email'] ?? 'N/A'}', style: TextStyle(fontSize: 18, color: Colors.black26)),
             ),
             SizedBox(height: 10),
             Text('Status: ${_profile['accountStatus'] ?? 'N/A'}', style: TextStyle(fontSize: 18, color: Colors.green)),
-            Spacer(), // Use Spacer to push the logout button to the bottom of the screen
-            Align( // Align the logout button to the center at the bottom
+            Spacer(),
+            Align(
               alignment: Alignment.bottomCenter,
               child: ElevatedButton(
                 onPressed: () {
